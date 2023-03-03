@@ -2,7 +2,13 @@ from scipy import stats
 from statistics import mean
 from enum import Enum, unique, auto
 from collections import namedtuple
-Point = namedtuple("Point", ['x', 'y'])
+# Point = namedtuple("Point", ['x', 'y'])
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 class FuzzyInput:
@@ -13,22 +19,25 @@ class FuzzyInput:
         self.mu = self.__calcMu()
 
     def __calcMu(self):
-        if self.x_test <= self.points[0].x:
+        if self.x_test < self.points[0].x:
             return self.points[0].y
-        elif self.x_test >= self.points[-1].x:
+        elif self.x_test > self.points[-1].x:
             return self.points[-1].y
 
         for p1, p2 in zip(self.points, self.points[1:]):
             if p1.x <= self.x_test <= p2.x:
-                return FuzzyInput.line_through_two_points(p1, p2)(self.x_test)
-
-    # TODO: prepraviti da racuna belovu krivu
-    #  stats.norm.pdf()
+                delta = p2.x - p1.x
+                self.x_test -= delta
+                if p1.y == p2.y:
+                    return p1.y
+                else:
+                    return self.__bell_slope(delta, self.x_test, p1.y < p2.y)
 
     @staticmethod
-    def line_through_two_points(a, b):
-        c = (b.x - a.x) / (b.y - a.y)
-        return lambda x_test: (x_test - a.x) / c + a.y
+    def __bell_slope(delta, x_test, upward=True):
+        if upward:
+            x_test = delta - x_test
+        return stats.norm.pdf(x_test, 0, delta/3) / stats.norm.pdf(0, 0, delta/3)
 
 
 class FuzzyOutput:
