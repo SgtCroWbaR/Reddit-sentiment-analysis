@@ -20,16 +20,22 @@ class MultiHeadAttention:
         interval = ceil(self.input_dim / self.num_of_heads)
         for embeddnings in tqdm(self.embeddings_array, desc="Calculating attention"):
             i = 0
+
             score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
                            np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
             normalised_score = np.array([row / max(1, np.sum(row)) for row in score])
             reweight = np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])
             i += 1
             while i < self.num_of_heads:
-                np.concatenate((score, np.dot(embeddnings[:, i * interval:(i + 1) * interval],
-                                              np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))), axis=1)
-                np.concatenate((normalised_score, np.array([row / max(1, np.sum(row)) for row in score])), axis=1)
-                np.concatenate((reweight, np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])), axis=1)
+                next_score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
+                                    np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
+
+                next_normalised_score = np.array([row / max(1, np.sum(row)) for row in score])
+                next_reweight = np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])
+
+                score = np.concatenate((deepcopy(score), deepcopy(next_score)), axis=1)
+                normalised_score = np.concatenate((deepcopy(normalised_score), deepcopy(next_normalised_score)), axis=1)
+                reweight = np.concatenate((deepcopy(reweight), deepcopy(next_reweight)), axis=1)
                 i += 1
             self.scores.append(deepcopy(score))
             self.normalised_scores.append(deepcopy(normalised_score))
