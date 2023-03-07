@@ -17,13 +17,10 @@ class MultiHeadAttention:
         self.normalised_scores = []
         self.reweighted = []
 
-        
+
         interval = ceil(self.input_dim / self.num_of_heads)
         for embeddnings in tqdm(self.embeddings_array, desc="Calculating attention"):
             i = 0
-            # self.scores = []
-            # self.normalised_scores = []
-            # self.reweighted = []
 
             score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
                            np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
