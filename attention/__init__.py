@@ -17,7 +17,6 @@ class MultiHeadAttention:
         self.normalised_scores = []
         self.reweighted = []
 
-
         interval = ceil(self.input_dim / self.num_of_heads)
         for embeddnings in tqdm(self.embeddings_array, desc="Calculating attention"):
             i = 0
@@ -29,7 +28,7 @@ class MultiHeadAttention:
             i += 1
             while i < self.num_of_heads:
                 next_score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
-                                                      np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
+                                    np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
 
                 next_normalised_score = np.array([row / max(1, np.sum(row)) for row in score])
                 next_reweight = np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])
@@ -41,4 +40,3 @@ class MultiHeadAttention:
             self.scores.append(deepcopy(score))
             self.normalised_scores.append(deepcopy(normalised_score))
             self.reweighted.append(deepcopy(reweight))  # return value
-
