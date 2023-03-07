@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from math import ceil
+from math import ceil, sqrt
 from tqdm import tqdm
 
 
@@ -39,4 +39,4 @@ class MultiHeadAttention:
                 i += 1
             self.scores.append(deepcopy(score))
             self.normalised_scores.append(deepcopy(normalised_score))
-            self.reweighted.append(deepcopy(reweight))  # return value
+            self.reweighted.append(deepcopy(reweight) / sqrt(self.input_dim))  # return value
