@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from math import ceil
+from tqdm import tqdm
 
 
 class MultiHeadAttention:
@@ -17,7 +18,7 @@ class MultiHeadAttention:
         self.reweighted = []
 
         interval = ceil(self.input_dim / self.num_of_heads)
-        for embeddnings in self.embeddings_array:
+        for embeddnings in tqdm(self.embeddings_array, desc="Calculating attention"):
             i = 0
             score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
                            np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
