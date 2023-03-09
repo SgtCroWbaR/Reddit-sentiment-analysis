@@ -6,15 +6,31 @@ np.random.seed(69)
 
 
 def cross_entropy(p, q):
-    return -sum([p[i] * log2(q[i]) for i in range(len(p))])
+    epsilon = 1e-10
+    return -sum([p[i] * np.log(q[i] + epsilon) for i in range(p.shape[0])])
 
 
 def relu(x):
     return max(0.0, x)
 
 
-def none(x):
-    pass
+def dRelu(x):
+    if x < 0:
+        return 0
+    else:
+        return 1
+
+
+def linear(x):
+    return x
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def dSigmoid(x):
+    return x*(1-x)
 
 
 class Dense:
@@ -23,7 +39,13 @@ class Dense:
         self.output_size = output_size
         self.weights = np.random.randn(output_size, input_size) * sqrt(2 / input_size)
         self.bias = np.zeros((output_size, 1))
+        if activation == relu:
+            self.derivate = dRelu
+        elif activation == sigmoid:
+            self.derivate = dSigmoid
+
         self.activation = np.vectorize(activation)
+        self.derivate = np.vectorize(self.derivate)
 
     def forward(self, input_vec):
         self.input_vec = input_vec
@@ -31,10 +53,10 @@ class Dense:
         return self.output_vec
 
     def backward(self, grad):
-        self.delta_weights = np.dot(grad, self.input_vec) / self.input_size
+        self.delta_weights = np.dot(grad, self.input_vec.T) / self.input_size
         self.delta_bias = np.sum(grad, axis=1, keepdims=True) / self.input_size
         next_grad = np.dot(self.weights.T, grad)
-        next_grad = grad * self.activation(next_grad)
+        next_grad = next_grad * np.sum(self.derivate(self.output_vec))
         return next_grad
 
     def update(self, learning_rate):
@@ -44,7 +66,7 @@ class Dense:
 
 class Sequential:
     def __init__(self, layers=None, loss_function=cross_entropy):
-        self.loss_function = np.vectorize(loss_function)
+        self.loss_function = loss_function
         if layers is None:
             self.layers = []
         else:
@@ -66,20 +88,22 @@ class Sequential:
         for layer in self.layers:
             layer.update(learning_rate)
 
-    def train(self, x, y, epochs, batch_size, learning_rate):
+    def train(self, Xs, Ys, epochs, learning_rate):
         self.history = {}
-        for epoch in tqdm(range(epochs), desc="Epochs"):
-            for i in range(0, x.shape[0], batch_size):
-                x_batch = x[i:i + batch_size]
-                y_batch = y[i:i + batch_size]
-
-                output = self.forward(x_batch)
-                loss = self.loss_function(output, y_batch)
-                grad = (output - y_batch) / x_batch.shape[0]
+        loss = float("inf")
+        epochs = tqdm(range(epochs))
+        for epoch in epochs:
+            epochs.set_description(f"Loss: {loss}")
+            loss_arr = []
+            for x, y in list(zip(Xs, Ys)):
+                output = self.forward(x)
+                loss = self.loss_function(output, y)
+                loss_arr.append(loss)
+                grad = (output.T - y) / x.shape[0]
+                grad = grad.T
                 self.bacward(grad)
                 self.update(learning_rate)
-            self.history[epoch] = loss
-            print(f"Loss: {loss}")
+            self.history[epoch] = np.average(loss_arr)
 
     def predict(self, x):
         return self.forward(x)
