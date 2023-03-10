@@ -10,8 +10,7 @@ class Point:
 
 
 class FuzzyInput:
-    def __init__(self, name, points, x_test):
-        self.name = name
+    def __init__(self, points, x_test):
         self.points = points
         self.x_test = x_test
         self.mu = self.__calcMu()
@@ -39,8 +38,7 @@ class FuzzyInput:
 
 
 class FuzzyOutput:
-    def __init__(self, name, points):
-        self.name = name
+    def __init__(self, points):
         self.points = points
         self.mu = 0
         self.c = self.calcC()
