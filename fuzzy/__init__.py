@@ -1,8 +1,6 @@
 from scipy import stats
 from statistics import mean
 from enum import Enum, unique, auto
-from collections import namedtuple
-# Point = namedtuple("Point", ['x', 'y'])
 
 
 class Point:
@@ -37,7 +35,7 @@ class FuzzyInput:
     def __bell_slope(delta, x_test, upward=True):
         if upward:
             x_test = delta - x_test
-        return stats.norm.pdf(x_test, 0, delta/3) / stats.norm.pdf(0, 0, delta/3)
+        return stats.norm.pdf(x_test, 0, delta / 3) / stats.norm.pdf(0, 0, delta / 3)
 
 
 class FuzzyOutput:
@@ -47,7 +45,6 @@ class FuzzyOutput:
         self.mu = 0
         self.c = self.calcC()
 
-    #TODO: provetiti da li je ovo tacno
     def calcC(self):
         return mean([p.x for p in self.points if p.y == 1])
 
@@ -60,8 +57,12 @@ class LogicOp(Enum):
 
 
 class Rule:
-    def __init__(self, input1, input2, output, operator):
+    def __init__(self, input_list, output, operator):
         if operator == LogicOp.AND:
-            output.mu = max(output.mu, min(input1.mu, input2.mu))
+            output.mu = max(output.mu, min([x.mu for x in input_list]))
         else:
-            output.mu = max(output.mu, max(input1.mu, input2.mu))
+            output.mu = max(output.mu, max([x.mu for x in input_list]))
+
+
+def defuzzyfy(outputs):
+    return sum([outputs[i].mu * outputs[i].c for i in range(len(outputs))]) / sum([out.mu for out in outputs])
