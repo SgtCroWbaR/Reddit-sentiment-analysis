@@ -10,42 +10,52 @@ def cross_entropy(p, q):
     return -sum([p[i] * np.log(q[i] + epsilon) for i in range(p.shape[0])])
 
 
-def relu(x):
-    return max(0.0, x)
+class ActivationFunction:
+    @staticmethod
+    def activation(self):
+        pass
+
+    @staticmethod
+    def derivate(self):
+        pass
 
 
-def dRelu(x):
-    if x < 0:
-        return 0
-    else:
+class Relu(ActivationFunction):
+    def activation(self, x):
+        return max(0.0, x)
+
+    def derivate(self, x):
+        if x < 0:
+            return 0
+        else:
+            return 1
+
+
+class Sigmoid(ActivationFunction):
+    def activation(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def derivate(self, x):
+        return x * (1 - x)
+
+
+class Linear(ActivationFunction):
+    def activation(self, x):
+        return x
+
+    def derivate(self, x):
         return 1
 
 
-def linear(x):
-    return x
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def dSigmoid(x):
-    return x*(1-x)
-
 
 class Dense:
-    def __init__(self, input_size, output_size, activation=relu):
+    def __init__(self, input_size, output_size, activation=Relu()):
         self.input_size = input_size
         self.output_size = output_size
         self.weights = np.random.randn(output_size, input_size) * sqrt(2 / input_size)
         self.bias = np.zeros((output_size, 1))
-        if activation == relu:
-            self.derivate = dRelu
-        elif activation == sigmoid:
-            self.derivate = dSigmoid
-
-        self.activation = np.vectorize(activation)
-        self.derivate = np.vectorize(self.derivate)
+        self.activation = np.vectorize(activation.activation)
+        self.derivate = np.vectorize(activation.derivate)
 
     def forward(self, input_vec):
         self.input_vec = input_vec
