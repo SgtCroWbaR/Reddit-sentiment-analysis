@@ -14,7 +14,6 @@ class MultiHeadAttention:
 
     def _calc_attention(self):
         self.scores = []
-        self.normalised_scores = []
         self.reweighted = []
 
         interval = ceil(self.input_dim / self.num_of_heads)
@@ -23,20 +22,15 @@ class MultiHeadAttention:
 
             score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
                            np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
-            normalised_score = np.array([row / max(1, np.sum(row)) for row in score])
             reweight = np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])
             i += 1
             while i < self.num_of_heads:
                 next_score = np.dot(embeddnings[:, i * interval:(i + 1) * interval],
                                     np.transpose(embeddnings[:, i * interval:(i + 1) * interval]))
-
-                next_normalised_score = np.array([row / max(1, np.sum(row)) for row in score])
-                next_reweight = np.matmul(score, embeddnings[:, i * interval:(i + 1) * interval])
+                next_reweight = np.matmul(next_score, embeddnings[:, i * interval:(i + 1) * interval])
 
                 score = np.concatenate((deepcopy(score), deepcopy(next_score)), axis=1)
-                normalised_score = np.concatenate((deepcopy(normalised_score), deepcopy(next_normalised_score)), axis=1)
                 reweight = np.concatenate((deepcopy(reweight), deepcopy(next_reweight)), axis=1)
                 i += 1
             self.scores.append(deepcopy(score))
-            self.normalised_scores.append(deepcopy(normalised_score))
             self.reweighted.append(deepcopy(reweight) / sqrt(self.input_dim))  # return value
