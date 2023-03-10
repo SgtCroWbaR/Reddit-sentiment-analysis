@@ -1,6 +1,5 @@
 .idea/
 # dataset downloaded from: https://nlp.stanford.edu/data/glove.6B.zip
 main.py
-main2.py
 glove.6B/
 data/temp/
