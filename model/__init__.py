@@ -101,11 +101,11 @@ class Sequential:
     def train(self, Xs, Ys, epochs, learning_rate):
         self.history = {}
         loss = float("inf")
-        epochs = tqdm(range(epochs), position=0)
-        for epoch in epochs:
-            epochs.set_description(f"Loss: {loss}")
+        # epochs = tqdm(range(epochs), position=0)
+        for epoch in range(epochs):
+            # epochs.set_description(f"Loss: {loss}")
             loss_arr = []
-            for x, y in list(zip(Xs, Ys)):
+            for x, y in tqdm(list(zip(Xs, Ys))):
                 output = self.forward(x)
                 loss = self.loss_function(output, y)
                 loss_arr.append(loss)
@@ -114,7 +114,7 @@ class Sequential:
                 self.bacward(grad)
                 self.update(learning_rate)
             loss = np.average(loss_arr)
-            self.history[epoch] = loss
+            self.history[epoch] = loss, loss_arr
 
     def predict(self, x):
         return self.forward(x)
