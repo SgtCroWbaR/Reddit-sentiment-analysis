@@ -2,5 +2,6 @@
 # dataset downloaded from: https://nlp.stanford.edu/data/glove.6B.zip
 main.py
 train.py
+preprocess.py
 glove.6B/
 data/temp/
