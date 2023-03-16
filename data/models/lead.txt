@@ -1,0 +1,8 @@
+model_full_4L_3epochs_5heads+fastk5k 68%
+model_full_4L_3epochs_5heads+fastk10k 63%
+model_full_4L_4epochs_5heads 62% test 42%
+model_full_4L_3epochs_5heads 62% test 43%
+model_full_4L_2epochs_5heads 62% test 42%
+model_full_4L_1epoch_5heads 61% test 46%
+model_full_10epochs_10heads ~60% test 41%
+model_full_6L_1epoch_5heads
