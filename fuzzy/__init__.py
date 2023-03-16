@@ -63,4 +63,4 @@ class Rule:
 
 
 def defuzzyfy(outputs):
-    return sum([outputs[i].mu * outputs[i].c for i in range(len(outputs))]) / sum([out.mu for out in outputs])
+    return sum([out.mu * out.c for out in outputs]) / (sum([out.mu for out in outputs]) + 1e-4)
