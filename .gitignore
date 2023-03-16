@@ -1,7 +1,6 @@
 .idea/
 # dataset downloaded from: https://nlp.stanford.edu/data/glove.6B.zip
-main.py
-train.py
-preprocess.py
+# main.py
+# train.py
 glove.6B/
-data/temp/
+# data/models/
