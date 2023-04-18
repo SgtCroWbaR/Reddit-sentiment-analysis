@@ -41,7 +41,9 @@ if __name__ == "__main__":
     subjectivity = {'subjective': FuzzyInput([Point(0, 0), Point(0.2, 1)], score),
                     'objective': FuzzyInput([Point(0, 1), Point(0.2, 0)], score)}
 
+    #TODO: ovde menjam vektor koji ocenjujem
     text_vec = MultiHeadAttention(Embeddings([text], dictionary).texts_embedings, num_of_heads).reweighted[0]
+    
     pred = []
     for arr in text_vec:
         pred.append(np.argmax(model.predict(np.reshape(arr, newshape=(100, 1)))))
@@ -54,9 +56,8 @@ if __name__ == "__main__":
                  'neutral': FuzzyInput([Point(-0.4, 0), Point(-0.2, 1), Point(0.2, 1), Point(0.4, 0)], sentiment_score),
                  'positive': FuzzyInput([Point(0.2, 0), Point(0.5, 1)], sentiment_score)}
 
-    type_of_text = {'useless': FuzzyOutput([Point(0, 0), Point(10, 1), Point(20, 1), Point(30, 0)]),
-                    'opinion': FuzzyOutput([Point(30, 0), Point(40, 1), Point(50, 1), Point(60, 0)]),
-                    'essay': FuzzyOutput([Point(60, 0), Point(70, 1), Point(80, 1), Point(90, 0)])}
+    type_of_text = {'opinion': FuzzyOutput([Point(0, 0), Point(10, 1), Point(20, 1), Point(30, 0)]),
+                    'essay': FuzzyOutput([Point(30, 0), Point(40, 1), Point(50, 1), Point(60, 0)])}
 
     rules = [
         Rule([length['medium'], subjectivity['subjective'], sentiment['negative']], type_of_text['opinion'], LogicOp.AND),
