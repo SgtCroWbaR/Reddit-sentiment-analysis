@@ -3,6 +3,8 @@ from attention import MultiHeadAttention
 from model import Dense, Relu, Linear, Sigmoid, Sequential
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+import os
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -23,6 +25,42 @@ def flatten(X, y):
     return xs, np.array(ys)
 
 
+def train_test_acc(X_train, X_test, y_train, y_test, model_name):
+
+    file = open('data/models/' + model_name + 'STATS.txt', 'w')
+
+    y_train_pred = []
+    for X in tqdm(X_train):
+        pred = []
+        for arr in X:
+            pred.append(np.argmax(model.predict(np.reshape(arr, newshape=(100, 1)))))
+        counts = np.bincount(np.array(pred))
+        y_train_pred.append(np.argmax(counts))
+    y_train_true = list(map(lambda x: np.argmax(x), y_train))
+
+    train_acc = accuracy_score(y_train_true, y_train_pred)
+    print(f"train  acc: {train_acc}")
+    print(f"train: \n{confusion_matrix(y_train_true, y_train_pred)}")
+    file.write(f"train  acc: {train_acc}\n")
+    file.write(f"train: \n{confusion_matrix(y_train_true, y_train_pred)}\n")
+
+    y_test_pred = []
+    for X in tqdm(X_test):
+        pred = []
+        for arr in X:
+            pred.append(np.argmax(model.predict(np.reshape(arr, newshape=(100, 1)))))
+        counts = np.bincount(np.array(pred))
+        y_test_pred.append(np.argmax(counts))
+    y_test_true = list(map(lambda x: np.argmax(x), y_test))
+
+    test_acc = accuracy_score(y_test_true, y_test_pred)
+    print(f"test  acc: {test_acc}")
+    print(f"test: \n{confusion_matrix(y_test_true, y_test_pred)}")
+    file.write(f"test  acc: {test_acc}\n")
+    file.write(f"test: \n{confusion_matrix(y_test_true, y_test_pred)}\n")
+    file.close()
+
+
 if __name__ == "__main__":
     comments_scores = pd.read_csv('data/dataset/reddit_comments.csv')
     comments_scores = comments_scores[:]
@@ -38,7 +76,7 @@ if __name__ == "__main__":
     X, y = comments_scores['clean_comment'], comments_scores['category']
     _df_X_train, _df_X_test, _df_y_train, _df_y_test = train_test_split(X, y, test_size=0.3, random_state=random_state, stratify=y)
 
-    num_of_heads = 5
+    num_of_heads = 15
     X_train = MultiHeadAttention(Embeddings(_df_X_train.values, dictionary).texts_embedings, num_of_heads).reweighted
     X_test = MultiHeadAttention(Embeddings(_df_X_test.values, dictionary).texts_embedings, num_of_heads).reweighted
 
@@ -46,61 +84,34 @@ if __name__ == "__main__":
     y_test = to_categorical(_df_y_test.values, num_classes=3)
 
 
-    X_train, y_train = flatten(X_train, y_train)
+
+    X_train_flat, y_train_flat = flatten(X_train, y_train)
     # X_test, y_test = flatten(X_test, y_test)
 
 
+    directory = 'data/models/'
 
-    with open('data/models/model_full_4L_3epochs_5heads.pkl', 'rb') as file:
-        model = pickle.load(file)
-    print("Loaded")
-
-
-    # TODO: naci nacin kako da unapredim preciznost modela :(
-    # watch out for the input shape, put single element in list
-
-    #acc:
-    y_test_pred = []
-    for X in X_test:
-        pred = []
-        for arr in X:
-            pred.append(np.argmax(model.predict(np.reshape(arr, newshape=(100, 1)))))
-        counts = np.bincount(np.array(pred))
-        y_test_pred.append(np.argmax(counts))
-    y_test_true = list(map(lambda x: np.argmax(x), y_test))
-
-    test_acc = accuracy_score(y_test_true, y_test_pred)
-    print(f"test  acc: {test_acc}")
-    print(f"test: \n{confusion_matrix(y_test_true, y_test_pred)}")
+    # model_name = 'model_10k_4L_1epoch.pkl'
+    # with open(directory + model_name, 'rb') as file:
+    #     model = pickle.load(file)
+    # print("Loaded: " + model_name)
+    # train_test_acc(X_train, X_test, y_train, y_test, model_name)
 
 
-    # input_size = X_train[0].shape[0]
-    # layers = [Dense(input_size, 200, Relu()),
-    #           Dense(200, 200, Relu()),
-    #           Dense(200, 100, Relu()),
-    #           Dense(100, 20, Relu()),
-    #           Dense(20, num_of_heads, Relu()),
-    #           Dense(num_of_heads, 3, Sigmoid()),
-    #           ]
-    # model = Sequential(layers)
+    input_size = X_train_flat[0].shape[0]
+    layers = [Dense(input_size, 200, Relu()),
+              Dense(200, 200, Relu()),
+              Dense(200, 50, Relu()),
+              Dense(50, 3, Sigmoid()),
+              ]
+    model = Sequential(layers)
 
-    # num_of_epochs = 6
-    # for i in range(num_of_epochs):
-    #     model.train(X_train, y_train, i, 0.001)
-    #
-    #     y_train_pred = list(map(lambda x: np.argmax(model.predict(x)), X_train))
-    #     y_train_true = list(map(lambda x: np.argmax(x), y_train))
-    #     train_acc = accuracy_score(y_train_true, y_train_pred)
-    #     print(f"train acc[{5+i}]:{train_acc}")
-    #
-    #     y_test_pred = list(map(lambda x: np.argmax(model.predict(x)), X_test))
-    #     y_test_true = list(map(lambda x: np.argmax(x), y_test))
-    #     test_acc = accuracy_score(y_test_true, y_test_pred)
-    #     print(f"test  acc[{5+i}]:{test_acc}")
-    #
-    #     # print(f"train:\n{confusion_matrix(y_train_true, y_train_pred)}")
-    #     # print(f"test: \n{confusion_matrix(y_test_true, y_test_pred)}")
-    #
-    # with open('data/models/model_full_4L_10epochs_5heads.pkl', 'wb') as file:
-    #     pickle.dump(model, file)
-    # print("saved")
+
+    num_of_epochs = 10
+    for i in range(num_of_epochs):
+        model.train(X_train_flat, y_train_flat, 1, 0.001)
+        model_name = f'model_full_{len(layers)}L_{i+1}epochs_{num_of_heads}heads.pkl'
+        with open(directory + model_name, 'wb') as file:
+            pickle.dump(model, file)
+        print("saved")
+        train_test_acc(X_train, X_test, y_train, y_test, model_name)

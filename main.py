@@ -43,7 +43,6 @@ if __name__ == "__main__":
 
     #TODO: ovde menjam vektor koji ocenjujem
     text_vec = MultiHeadAttention(Embeddings([text], dictionary).texts_embedings, num_of_heads).reweighted[0]
-    
     pred = []
     for arr in text_vec:
         pred.append(np.argmax(model.predict(np.reshape(arr, newshape=(100, 1)))))
