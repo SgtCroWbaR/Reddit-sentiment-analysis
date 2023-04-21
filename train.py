@@ -76,7 +76,7 @@ if __name__ == "__main__":
     X, y = comments_scores['clean_comment'], comments_scores['category']
     _df_X_train, _df_X_test, _df_y_train, _df_y_test = train_test_split(X, y, test_size=0.3, random_state=random_state, stratify=y)
 
-    num_of_heads = 15
+    num_of_heads = 20
     X_train = MultiHeadAttention(Embeddings(_df_X_train.values, dictionary).texts_embedings, num_of_heads).reweighted
     X_test = MultiHeadAttention(Embeddings(_df_X_test.values, dictionary).texts_embedings, num_of_heads).reweighted
 
